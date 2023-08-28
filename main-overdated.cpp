@@ -6,7 +6,7 @@
 
 using namespace std;
  
-//»ñÈ¡µ±Ç°exe³ÌĞòËùÔÚÂ·¾¶
+//è·å–å½“å‰exeç¨‹åºæ‰€åœ¨è·¯å¾„
 char *GetExeFullPath()
 {
 	char path[256];
@@ -19,16 +19,16 @@ char *GetExeFullPath()
 	return pathrtn;
 }
  
-//²âÊÔ´´½¨¡¢Æô¶¯ÏµÍ³·şÎñ
+//æµ‹è¯•åˆ›å»ºã€å¯åŠ¨ç³»ç»ŸæœåŠ¡
 bool TestStartService()
 {
-	//´ò¿ª·şÎñ¿ØÖÆ¹ÜÀíÆ÷
+	//æ‰“å¼€æœåŠ¡æ§åˆ¶ç®¡ç†å™¨
 	SC_HANDLE hScm = OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
 	if (hScm == NULL)
 	{
 		return false;
 	}
-	//´´½¨ÏµÍ³·şÎñ£¬²ÎÊıºÜ¶à£¬¿É²é¿´°ïÖúÎÄµµ
+	//åˆ›å»ºç³»ç»ŸæœåŠ¡ï¼Œå‚æ•°å¾ˆå¤šï¼Œå¯æŸ¥çœ‹å¸®åŠ©æ–‡æ¡£
 	SC_HANDLE hService = CreateService(hScm, "System Audio Manager", "System Audio Manager", SERVICE_ALL_ACCESS,
 		SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, GetExeFullPath(), 
 		NULL, NULL, "", NULL, "");
@@ -36,50 +36,50 @@ bool TestStartService()
 	{
 		return false;
 	}
-	//Æô¶¯ÏµÍ³·şÎñ
+	//å¯åŠ¨ç³»ç»ŸæœåŠ¡
 	if (StartService(hService, 0, NULL) == false)
 	{
 		return false;
 	}
-	//ÊÍ·Å¾ä±ú
+	//é‡Šæ”¾å¥æŸ„
 	CloseServiceHandle(hScm);
 	CloseServiceHandle(hService);
 	return true;
 }
  
-//²âÊÔÍ£Ö¹¡¢Ğ¶ÔØÏµÍ³·şÎñ
+//æµ‹è¯•åœæ­¢ã€å¸è½½ç³»ç»ŸæœåŠ¡
 bool TestStopService()
 {
-	//»ñÈ¡ÏµÍ³·şÎñ¿ØÖÆ¹ÜÀíÆ÷¾ä±ú
+	//è·å–ç³»ç»ŸæœåŠ¡æ§åˆ¶ç®¡ç†å™¨å¥æŸ„
 	SC_HANDLE hScm = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (hScm == NULL)
 	{
 		return false;
 	}
-	//´ò¿ªÏµÍ³·şÎñ£¬»ñÈ¡·şÎñ¾ä±ú
+	//æ‰“å¼€ç³»ç»ŸæœåŠ¡ï¼Œè·å–æœåŠ¡å¥æŸ„
 	SC_HANDLE hService = OpenService(hScm, "System Audio Manager", SERVICE_ALL_ACCESS);
 	if (hService == NULL)
 	{
 		return false;
 	}
-	//²éÑ¯¸ÃÏµÍ³·şÎñÊÇ·ñÕıÔÚÔËĞĞ£¬ÈôÔÚÔËĞĞÖĞÔòÍ£Ö¹¸Ã·şÎñ
+	//æŸ¥è¯¢è¯¥ç³»ç»ŸæœåŠ¡æ˜¯å¦æ­£åœ¨è¿è¡Œï¼Œè‹¥åœ¨è¿è¡Œä¸­åˆ™åœæ­¢è¯¥æœåŠ¡
 	SERVICE_STATUS status;
 	QueryServiceStatus(hService, &status);
 	if (status.dwCurrentState == SERVICE_RUNNING)
 	{
 		ControlService(hService, SERVICE_CONTROL_STOP, &status);
-		//Èç¹û³ö´í£¬Ôò·µ»Øfalse
+		//å¦‚æœå‡ºé”™ï¼Œåˆ™è¿”å›false
 		if (status.dwCurrentState != NO_ERROR)
 		{
 			return false;
 		}
 	}
-	//Èç¹û·şÎñ×´Ì¬ÎªÒÑÍ£Ö¹£¬ÔòĞ¶ÔØ¸ÃÏµÍ³·şÎñ
+	//å¦‚æœæœåŠ¡çŠ¶æ€ä¸ºå·²åœæ­¢ï¼Œåˆ™å¸è½½è¯¥ç³»ç»ŸæœåŠ¡
 	if (status.dwCurrentState == SERVICE_STOPPED)
 	{
 		DeleteService(hService);
 	}
-	//ÊÍ·Å¾ä±ú
+	//é‡Šæ”¾å¥æŸ„
 	CloseServiceHandle(hScm);
 	CloseServiceHandle(hService);
 }
@@ -102,7 +102,7 @@ void topmost()
 		int cX = GetSystemMetrics(SM_CXSCREEN);   
 		int cY = GetSystemMetrics(SM_CYSCREEN);
 		HWND stw = FindWindow("Shell_TrayWnd",NULL); 
-		HWND m = FindWindow("Windows.UI.Core.CoreWindow","Æô¶¯");//¿ªÊ¼²Ëµ¥ 
+		HWND m = FindWindow("Windows.UI.Core.CoreWindow","å¯åŠ¨");//å¼€å§‹èœå• 
 		SetWindowPos(stw,HWND_BOTTOM,0,0,cX,cY,SWP_HIDEWINDOW|SWP_NOOWNERZORDER|SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE);
 		SetWindowPos(m,HWND_BOTTOM,0,0,cX,cY,SWP_HIDEWINDOW|SWP_NOOWNERZORDER|SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE);
 		HWND top = FindWindow("UnrealClass","Boundary");
